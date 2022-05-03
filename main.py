@@ -1,6 +1,7 @@
+
 from scrapy.crawler import CrawlerProcess
 
-from spiders import FanForumSpider
+from fanforum_crawler.spiders.fanforum_spider import FanForumSpider
 
 if __name__ == '__main__':
     process = CrawlerProcess()
