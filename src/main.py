@@ -1,3 +1,8 @@
+from scrapy.crawler import CrawlerProcess
+
+from spiders import FanForumSpider
 
 if __name__ == '__main__':
-    print('hello, world!')
+    process = CrawlerProcess()
+    process.crawl(FanForumSpider)
+    process.start()
