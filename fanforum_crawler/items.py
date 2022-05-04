@@ -2,7 +2,7 @@
 from scrapy import Field, Item
 
 
-class PostItem(Item):
+class CommentItem(Item):
     author = Field() # Convert this field to author object
     created_at = Field()
     votes = Field()
