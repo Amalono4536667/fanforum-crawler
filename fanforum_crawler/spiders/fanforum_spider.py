@@ -10,13 +10,13 @@ class FanForumSpider(Spider):
 
     allowed_domains = ['sodika.org']
     name = 'fanforumspider'
-    start_urls = [
-        'https://forum.sodika.org'
-    ]
 
     def generate_urls(self, response):
-        last_page = int(response.xpath('//div[@class="paginator"]//a/text()')[-1].extract())
-        for i in range(last_page - self.NUMBER_OF_PAGES_TO_CRAWL, last_page):
+        end = int(response.xpath('//div[@class="paginator"]//a/text()')[-1].extract())
+        yield self.parse(response)
+
+        start = 0 if end < self.NUMBER_OF_PAGES_TO_CRAWL else end - self.NUMBER_OF_PAGES_TO_CRAWL
+        for i in range(start, end):
             yield Request(f'https://forum.sodika.org/index.php?pageNo={i}', callback=self.parse)
 
     def start_requests(self):
