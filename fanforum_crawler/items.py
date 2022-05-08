@@ -9,6 +9,6 @@ class Comment(BaseModel):
     created_at: datetime
     votes: int
     quote: Optional[str]
-    content: str
+    content: Optional[str]
     title: str
     signature: Optional[str]

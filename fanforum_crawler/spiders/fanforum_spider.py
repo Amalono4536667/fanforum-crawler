@@ -3,6 +3,7 @@ from scrapy import Request, Spider
 from scrapy.http import HtmlResponse
 
 from fanforum_crawler.items import Comment
+from fanforum_crawler import string_utils
 
 
 class FanForumSpider(Spider):
@@ -11,7 +12,7 @@ class FanForumSpider(Spider):
     allowed_domains = ['sodika.org']
     name = 'fanforumspider'
 
-    def generate_urls(self, response):
+    def _generate_urls(self, response: HtmlResponse):
         end = int(response.xpath('//div[@class="paginator"]//a/text()')[-1].extract())
         yield self.parse(response)
 
@@ -19,8 +20,8 @@ class FanForumSpider(Spider):
         for i in range(start, end):
             yield Request(f'https://forum.sodika.org/index.php?pageNo={i}', callback=self.parse)
 
-    def start_requests(self):
-        return [Request('https://forum.sodika.org', callback=self.generate_urls)]
+    def start_requests(self) -> list[Request]:
+        return [Request('https://forum.sodika.org', callback=self._generate_urls)]
 
     def parse(self, response: HtmlResponse, **kwargs):
         for comment in response.xpath('//div[contains(@class, "comment")]'):
@@ -30,10 +31,10 @@ class FanForumSpider(Spider):
                     comment.xpath('./div[@class="header"]//span[@class="date"]/text()').get(), 'MMM DD, YYYY HH:mm:ss',
                     tz='Europe/Budapest'),
                 votes=int(comment.xpath('./div[@class="header"]//b[starts-with(@class,"votes-")]/text()').get()),
-                quote=''.join(comment.xpath('./div[@class="content"]//div[@class="quote"]/text()').extract()).strip(),
-                content=''.join(
-                    comment.xpath('./div[@class="content"]//div[@class="innerDiv"]/text()').extract()).strip(),
+                quote=string_utils.join(comment.xpath('./div[@class="content"]//div[@class="quote"]/text()').extract()),
+                content=string_utils.join(comment.xpath('./div[@class="content"]//div[@class="innerDiv"]/text()')
+                                          .extract()),
                 title=comment.xpath('./div[@class="header"]//span/@title').get(),
-                signature=''.join(
-                    comment.xpath('./div[@class="content"]//i[@class="signature"]/text()').extract()).strip()
+                signature=string_utils.join(comment.xpath('./div[@class="content"]//i[@class="signature"]/text()')
+                                            .extract())
             ).dict()
