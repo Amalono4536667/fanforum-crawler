@@ -1,19 +1,29 @@
 from scrapy import Request, Spider
+from scrapy.http import HtmlResponse
 from scrapy.loader import ItemLoader
 
 from fanforum_crawler.items import CommentItem
 
 
 class FanForumSpider(Spider):
+    NUMBER_OF_PAGES_TO_CRAWL = 50
+
     allowed_domains = ['sodika.org']
-    name = "fanforumspider"
+    name = 'fanforumspider'
+    start_urls = [
+        'https://forum.sodika.org'
+    ]
+
+    def generate_urls(self, response):
+        last_page = int(response.xpath('//div[@class="paginator"]//a/text()')[-1].extract())
+        for i in range(last_page - self.NUMBER_OF_PAGES_TO_CRAWL, last_page):
+            yield Request(f'https://forum.sodika.org/index.php?pageNo={i}', callback=self.parse)
 
     def start_requests(self):
-        yield Request('https://forum.sodika.org', callback=self.parse)
+        return [Request('https://forum.sodika.org', callback=self.generate_urls)]
 
-    def parse(self, response, **kwargs):
-        comments = response.xpath('//div[contains(@class, "comment")]')
-        for comment in comments:
+    def parse(self, response: HtmlResponse, **kwargs):
+        for comment in response.xpath('//div[contains(@class, "comment")]'):
             loader = ItemLoader(item=CommentItem(), selector=comment)
             loader.add_xpath('author', './div[@class="header"]//strong[contains(@class,"verified")]/text()')
             loader.add_xpath('created_at', './div[@class="header"]//span[@class="date"]/text()')
