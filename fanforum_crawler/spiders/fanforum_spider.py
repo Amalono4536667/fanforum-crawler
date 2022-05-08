@@ -30,8 +30,10 @@ class FanForumSpider(Spider):
                     comment.xpath('./div[@class="header"]//span[@class="date"]/text()').get(), 'MMM DD, YYYY HH:mm:ss',
                     tz='Europe/Budapest'),
                 votes=int(comment.xpath('./div[@class="header"]//b[starts-with(@class,"votes-")]/text()').get()),
-                quote=comment.xpath('./div[@class="content"]//div[@class="quote"]/text()').get(),
-                content=comment.xpath('./div[@class="content"]//div[@class="innerDiv"]/text()').get(),
+                quote=''.join(comment.xpath('./div[@class="content"]//div[@class="quote"]/text()').extract()).strip(),
+                content=''.join(
+                    comment.xpath('./div[@class="content"]//div[@class="innerDiv"]/text()').extract()).strip(),
                 title=comment.xpath('./div[@class="header"]//span/@title').get(),
-                signature=comment.xpath('./div[@class="content"]//i[@class="signature"]/text()').get()
+                signature=''.join(
+                    comment.xpath('./div[@class="content"]//i[@class="signature"]/text()').extract()).strip()
             ).dict()
