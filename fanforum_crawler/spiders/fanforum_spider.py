@@ -1,12 +1,12 @@
+import pendulum
 from scrapy import Request, Spider
 from scrapy.http import HtmlResponse
-from scrapy.loader import ItemLoader
 
-from fanforum_crawler.items import CommentItem
+from fanforum_crawler.items import Comment
 
 
 class FanForumSpider(Spider):
-    NUMBER_OF_PAGES_TO_CRAWL = 50
+    NUMBER_OF_PAGES_TO_CRAWL = 1
 
     allowed_domains = ['sodika.org']
     name = 'fanforumspider'
@@ -24,12 +24,14 @@ class FanForumSpider(Spider):
 
     def parse(self, response: HtmlResponse, **kwargs):
         for comment in response.xpath('//div[contains(@class, "comment")]'):
-            loader = ItemLoader(item=CommentItem(), selector=comment)
-            loader.add_xpath('author', './div[@class="header"]//strong[contains(@class,"verified")]/text()')
-            loader.add_xpath('created_at', './div[@class="header"]//span[@class="date"]/text()')
-            loader.add_xpath('votes', './div[@class="header"]//b[starts-with(@class,"votes-")]/text()')
-            loader.add_xpath('quote', './div[@class="content"]//div[@class="quote"]/text()')
-            loader.add_xpath('content', './div[@class="content"]//div[@class="innerDiv"]/text()')
-            loader.add_xpath('title', './div[@class="header"]//span/@title')
-            loader.add_xpath('signature', './div[@class="content"]//i[@class="signature"]/text()')
-            yield loader.load_item()
+            yield Comment(
+                author=comment.xpath('./div[@class="header"]//strong/text()').get(),
+                created_at=pendulum.from_format(
+                    comment.xpath('./div[@class="header"]//span[@class="date"]/text()').get(), 'MMM DD, YYYY HH:mm:ss',
+                    tz='Europe/Budapest'),
+                votes=int(comment.xpath('./div[@class="header"]//b[starts-with(@class,"votes-")]/text()').get()),
+                quote=comment.xpath('./div[@class="content"]//div[@class="quote"]/text()').get(),
+                content=comment.xpath('./div[@class="content"]//div[@class="innerDiv"]/text()').get(),
+                title=comment.xpath('./div[@class="header"]//span/@title').get(),
+                signature=comment.xpath('./div[@class="content"]//i[@class="signature"]/text()').get()
+            ).dict()

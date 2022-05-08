@@ -1,11 +1,14 @@
-from scrapy import Field, Item
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel
 
 
-class CommentItem(Item):
-    author = Field()  # Convert this field to author object
-    created_at = Field()
-    votes = Field()
-    quote = Field()  # Convert this field to quote object
-    content = Field()
-    title = Field()
-    signature = Field()
+class Comment(BaseModel):
+    author: str
+    created_at: datetime
+    votes: int
+    quote: Optional[str]
+    content: str
+    title: str
+    signature: Optional[str]
