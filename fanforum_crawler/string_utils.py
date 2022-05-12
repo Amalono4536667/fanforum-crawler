@@ -1,6 +1,6 @@
 from typing import Optional
 
 
-def join(data: list) -> Optional[str]:
+def join(data: list, default_value=None) -> Optional[str]:
     tmp = ''.join(data).strip()
-    return None if not tmp else tmp
+    return tmp if tmp else default_value
